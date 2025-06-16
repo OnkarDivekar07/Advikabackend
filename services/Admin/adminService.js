@@ -8,6 +8,7 @@ exports.getAdminStats = async () => {
   const deliveredOrders = await prisma.order.count({ where: { status: 'delivered' } });
   const pendingOrders = await prisma.order.count({ where: { status: 'pending' } });
 
+  
   const totalRevenueResult = await prisma.order.aggregate({
     _sum: { total: true }
   });
