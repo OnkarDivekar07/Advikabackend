@@ -17,6 +17,7 @@ app.use(express.json());
 // Middleware for handling CORS
 app.use(cors());
 
+
 // Use morgan for logging HTTP requests (this is very useful in production)
 app.use(morgan('combined'));
 
