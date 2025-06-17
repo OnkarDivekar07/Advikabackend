@@ -1,4 +1,5 @@
 const productService = require('../../services/Product/productServices');
+const awsService = require('../../utils/AWSUploads');
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -20,10 +21,54 @@ exports.getProductById = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const product = await productService.createProduct(req.body);
-    res.status(201).json({ success: true, data: product });
+    const images = req.files;
+    console.log(req.files);
+    const {
+      name,
+      category,
+      brand,
+      price,
+      stock,
+      description,
+      isNewArrival,
+    } = req.body;
+
+    if (!images || images.length === 0) {
+      return res.status(400).json({ error: 'No images uploaded' });
+    }
+
+    // Upload images to S3 and collect URLs
+    const uploadedImageUrls = await Promise.all(
+      images.map((image) =>
+        awsService.uploadToS3(
+          image.buffer,
+          `product-images/${Date.now()}_${image.originalname}`
+        )
+      )
+    );
+
+    // Build the product data
+    const productData = {
+      name,
+      category,
+      brand,
+      price: parseFloat(price),
+      stock: parseInt(stock),
+      description,
+      isNewArrival: isNewArrival === 'true', // checkbox comes as string
+      images: uploadedImageUrls,
+    };
+
+    const product = await productService.createProduct(productData);
+
+    res.status(201).json({
+      success: true,
+      message: 'Product created successfully',
+      data: product,
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error('Product creation error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 

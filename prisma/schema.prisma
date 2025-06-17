@@ -41,7 +41,7 @@ model Product {
   images      String[]   // Array of image URLs
   description String
   createdAt   DateTime   @default(now())
-
+  isNewArrival Boolean @default(false)
   // Relations
   carts       Cart[]     // One product can be in many cart items
   reviews     Review[]   // One product can have many reviews
