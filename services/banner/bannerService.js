@@ -25,7 +25,24 @@ const createNewBanner = async (imageUrl, linkUrl) => {
   
 };
 
+const getBannerById = async (id) => {
+  return await prisma.banner.findUnique({
+    where: { id },
+  });
+};
+
+
+const deleteBannerById = async (id) => {
+  return await prisma.banner.delete({
+    where: { id },
+  });
+};
+
+
+
 module.exports = {
   getLatestBanner,
   createNewBanner,
+  deleteBannerById,
+  getBannerById
 };

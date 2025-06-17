@@ -36,7 +36,37 @@ const createBanner = async (req, res) => {
   }
 };
 
+
+
+
+const deleteBanner = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get banner from DB
+    const banner = await bannerService.getBannerById(id);
+    if (!banner) {
+      return res.status(404).json({ message: 'Banner not found' });
+    }
+
+    // Extract filename from S3 URL
+    const key = banner.imageUrl.split('.com/')[1];
+
+    // Delete from S3
+    await awsService.deleteFromS3(key);
+
+    // Delete from DB
+    await bannerService.deleteBannerById(id);
+
+    res.status(200).json({ message: 'Banner deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting banner:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
+  deleteBanner,
   getBanner,
   createBanner,
 };
