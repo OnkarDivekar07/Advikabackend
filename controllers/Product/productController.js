@@ -22,7 +22,6 @@ exports.getProductById = async (req, res) => {
 exports.createProduct = async (req, res) => {
   try {
     const images = req.files;
-
     const {
       name,
       category,
@@ -33,15 +32,11 @@ exports.createProduct = async (req, res) => {
       isNewArrival,
     } = req.body;
 
-    // Basic field validation
-    if (!name || !price || !stock || !description || !category || !brand) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
-    }
-
     if (!images || images.length === 0) {
       return res.status(400).json({ error: 'No images uploaded' });
     }
 
+    // Upload images to S3 and collect URLs
     const uploadedImageUrls = await Promise.all(
       images.map((image) =>
         awsService.uploadToS3(
@@ -51,6 +46,7 @@ exports.createProduct = async (req, res) => {
       )
     );
 
+    // Build the product data
     const productData = {
       name,
       category,
@@ -58,11 +54,9 @@ exports.createProduct = async (req, res) => {
       price: parseFloat(price),
       stock: parseInt(stock),
       description,
-      isNewArrival: isNewArrival === 'true',
+      isNewArrival: isNewArrival === 'true', // checkbox comes as string
       images: uploadedImageUrls,
     };
-
-    console.log('🛠 Creating product with data:', productData);
 
     const product = await productService.createProduct(productData);
 
@@ -72,8 +66,8 @@ exports.createProduct = async (req, res) => {
       data: product,
     });
   } catch (error) {
-    console.error('❌ Product creation error:', error);
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    console.error('Product creation error:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
 
