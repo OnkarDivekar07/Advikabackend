@@ -25,6 +25,19 @@ const createNewBanner = async (imageUrl, linkUrl) => {
   
 };
 
+
+const getNewArrivals = async () => {
+  return await prisma.product.findMany({
+    where: {
+  isNewArrival: true,
+},
+    orderBy: {
+      createdAt: 'desc', // Optional: show latest first
+    },
+  });
+};
+
+
 const getBannerById = async (id) => {
   return await prisma.banner.findUnique({
     where: { id },
@@ -44,5 +57,6 @@ module.exports = {
   getLatestBanner,
   createNewBanner,
   deleteBannerById,
-  getBannerById
+  getBannerById,
+  getNewArrivals
 };

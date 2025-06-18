@@ -65,7 +65,18 @@ const deleteBanner = async (req, res) => {
   }
 };
 
+const fetchNewArrivals = async (req, res) => {
+  try {
+    const products = await bannerService.getNewArrivals()
+    res.status(200).json({ success: true, data: products });
+  } catch (error) {
+    console.error("Error fetching new arrivals:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch new arrivals" });
+  }
+};
+
 module.exports = {
+  fetchNewArrivals,
   deleteBanner,
   getBanner,
   createBanner,
