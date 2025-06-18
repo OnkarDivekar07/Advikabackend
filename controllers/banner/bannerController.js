@@ -75,9 +75,26 @@ const fetchNewArrivals = async (req, res) => {
   }
 };
 
+const softDeleteNewArrival = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedProduct = await bannerService.softDeleteNewArrivalService(id);
+
+    res.status(200).json({
+      message: 'Product removed from new arrivals.',
+      data: updatedProduct,
+    });
+  } catch (error) {
+    console.error('Error in softDeleteNewArrival:', error);
+    res.status(500).json({ message: 'Failed to update product', error });
+  }
+};
+
+
 module.exports = {
   fetchNewArrivals,
   deleteBanner,
   getBanner,
   createBanner,
+  softDeleteNewArrival
 };

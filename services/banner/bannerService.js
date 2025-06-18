@@ -37,6 +37,13 @@ const getNewArrivals = async () => {
   });
 };
 
+const softDeleteNewArrivalService = async (id) => {
+  const updatedProduct = await prisma.product.update({
+    where: { id },
+    data: { isNewArrival: false },
+  });
+  return updatedProduct;
+};
 
 const getBannerById = async (id) => {
   return await prisma.banner.findUnique({
@@ -58,5 +65,6 @@ module.exports = {
   createNewBanner,
   deleteBannerById,
   getBannerById,
+  softDeleteNewArrivalService,
   getNewArrivals
 };
