@@ -29,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Define API routes
 app.use('/api', routes);
 
+
 // Global error handling middleware (optional but recommended)
 app.use((err, req, res, next) => {
   console.error(err.stack);
