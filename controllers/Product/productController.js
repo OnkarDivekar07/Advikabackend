@@ -23,7 +23,8 @@ exports.createProduct = async (req, res) => {
   try {
     const images = req.files;
 
-    const {
+    // Extract category separately so we can transform it
+    let {
       name,
       category,
       brand,
@@ -33,8 +34,13 @@ exports.createProduct = async (req, res) => {
       isNewArrival,
     } = req.body;
 
+    // Force category into an array (e.g., ["Truck", "Tempo"])
+    if (!Array.isArray(category)) {
+      category = category ? [category] : [];
+    }
+
     // Basic field validation
-    if (!name || !price || !stock || !description || !category || !brand) {
+    if (!name || !price || !stock || !description || category.length === 0 || !brand) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
 
@@ -76,6 +82,7 @@ exports.createProduct = async (req, res) => {
     res.status(500).json({ success: false, message: error.message || 'Server Error' });
   }
 };
+
 
 exports.updateProduct = async (req, res) => {
   try {
