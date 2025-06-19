@@ -2,8 +2,11 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const getAllProducts = async () => {
-  return await prisma.product.findMany();
+  return await prisma.product.findMany({
+    where: { isDeleted: false },
+  });
 };
+
 
 const getProductById = async (id) => {
   const product = await prisma.product.findUnique({ where: { id } });
@@ -23,8 +26,12 @@ const updateProduct = async (id, data) => {
 };
 
 const deleteProduct = async (id) => {
-  return await prisma.product.delete({ where: { id } });
+  return await prisma.product.update({
+    where: { id },
+    data: { isDeleted: true },
+  });
 };
+
 
 module.exports = {
   getAllProducts,
