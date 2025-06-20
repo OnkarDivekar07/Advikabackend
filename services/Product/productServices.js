@@ -19,11 +19,13 @@ const createProduct = async (data) => {
 };
 
 const updateProduct = async (id, data) => {
+  console.log('UPDATE DATA RECEIVED:', data); // debug here
   return await prisma.product.update({
     where: { id },
-    data,
+    data, // <== must not be undefined
   });
 };
+
 
 const deleteProduct = async (id) => {
   return await prisma.product.update({

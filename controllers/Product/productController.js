@@ -22,7 +22,7 @@ exports.getProductById = async (req, res) => {
 exports.createProduct = async (req, res) => {
   try {
     const images = req.files;
-
+     
     // Extract category separately so we can transform it
     let {
       name,
@@ -86,12 +86,43 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const product = await productService.updateProduct(req.params.id, req.body);
-    res.json({ success: true, data: product });
+    const id = req.params.id;
+    console.log(req.body);
+
+    // Extract fields from form data
+    const { name, category, price, description, stock, brand, isNewArrival } = req.body;
+
+    // Handle image files
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      imageUrls = req.files.map(file => file.path);
+    }
+
+    // Prepare update data
+    const updateData = {
+      name,
+      category, // array supported if Prisma allows it
+      price: parseFloat(price),
+      description,
+      stock: parseInt(stock),
+      brand,
+      isNewArrival: isNewArrival === 'true'
+    };
+
+    // Only update images if new ones are provided
+    if (imageUrls.length > 0) {
+      updateData.images = imageUrls;
+    }
+
+    const updatedProduct = await productService.updateProduct(id, updateData);
+
+    res.json({ success: true, product: updatedProduct });
   } catch (error) {
+    console.error('Update failed:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
 
 exports.deleteProduct = async (req, res) => {
   try {
