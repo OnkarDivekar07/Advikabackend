@@ -140,3 +140,14 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
+exports.getRelatedProducts = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const related = await productService.getRelatedProducts(id);
+    res.json(related);
+  } catch (error) {
+    console.error('Error:', error.message);
+    res.status(500).json({ message: error.message || 'Server error' });
+  }
+};

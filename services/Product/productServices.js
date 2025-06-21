@@ -34,6 +34,29 @@ const deleteProduct = async (id) => {
   });
 };
 
+const getRelatedProducts = async (productId) => {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  });
+
+  if (!product) {
+    throw new Error('Product not found');
+  }
+
+  const relatedProducts = await prisma.product.findMany({
+    where: {
+      category: {
+        has: product.category[0], // Or use hasSome: product.category
+      },
+      id: {
+        not: productId,
+      },
+    },
+    take: 4,
+  });
+
+  return relatedProducts;
+};
 
 module.exports = {
   getAllProducts,
@@ -41,4 +64,5 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
+  getRelatedProducts
 };

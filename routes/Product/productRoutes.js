@@ -12,6 +12,7 @@ const upload = require('../../uploads/multer');
 // Public routes
 router.get('/', productController.getAllProducts);
 router.get('/:id', productController.getProductById);
+router.get('/:id/related', productController.getRelatedProducts);
 
 // Admin-only routes
 router.post(
