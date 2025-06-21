@@ -12,6 +12,7 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
   try {
+    console.log(req.params.id)
     const product = await productService.getProductById(req.params.id);
     res.json({ success: true, data: product });
   } catch (error) {
