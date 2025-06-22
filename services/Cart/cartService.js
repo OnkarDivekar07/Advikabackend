@@ -8,19 +8,17 @@ const getCart = async (userId) => {
   });
 };
 
-const addToCart = async (userId, productId, quantity) => {
-  const existing = await prisma.cart.findFirst({ where: { userId, productId } });
+const saveUserCart = async (userId, cartItems) => {
+  // Optional: Clean existing cart
+  await prisma.cart.deleteMany({ where: { userId } });
 
-  if (existing) {
-    return await prisma.cart.update({
-      where: { id: existing.id },
-      data: { quantity: existing.quantity + quantity }
-    });
-  }
+  const newCartData = cartItems.map(item => ({
+    userId,
+    productId: item.productId,
+    quantity: item.quantity,
+  }));
 
-  return await prisma.cart.create({
-    data: { userId, productId, quantity }
-  });
+  await prisma.cart.createMany({ data: newCartData });
 };
 
 const updateCartItem = async (userId, productId, quantity) => {
@@ -38,7 +36,7 @@ const removeFromCart = async (userId, productId) => {
 
 module.exports = {
   getCart,
-  addToCart,
+  saveUserCart,
   updateCartItem,
   removeFromCart
 };

@@ -8,4 +8,6 @@ router.post('/login', loginUser);
 router.get('/profile',auth,getUserProfile)
 
 
+
+
 module.exports = router;

@@ -9,6 +9,7 @@ const orderRoutes=require('../routes/Order/orderRoutes')
 const adminRoutes=require('../routes/Admin/admin')
 const paymentRoutes=require('../routes/Payments/paymentRoutes')
 const bannerRoutes=require('../routes/banner/banner')
+const authRoutes =require('../routes/auth/authRoutes')
 
 // Use specific routes for each resource
 router.use('/user', userRoutes);
@@ -18,6 +19,7 @@ router.use('/order',orderRoutes);
 router.use('/admin',adminRoutes)
 router.use('/payment',paymentRoutes)
 router.use('/banner',bannerRoutes)
+router.use('/auth', authRoutes);
 
 
 // Optional: Catch-all route for undefined routes (404)

@@ -19,8 +19,8 @@ model User {
   name      String
   email     String   @unique
   password  String
-  address   String?
   role      String   // 'admin' or 'customer'
+  phone     String   @unique
   createdAt DateTime @default(now())
 
   // Relations
@@ -28,6 +28,7 @@ model User {
   carts          Cart[]
   reviews        Review[]
   contactQueries ContactQuery[]
+  addresses      Address[]
 }
 
 
@@ -109,4 +110,15 @@ model Banner {
   createdAt DateTime @default(now())
 }
 
-
+model Address {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  phone     String
+  pincode   String
+  city      String
+  state     String
+  landmark  String?
+  createdAt DateTime @default(now())
+}

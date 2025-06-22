@@ -32,7 +32,7 @@ async function main() {
       email: adminEmail,
       password: hashedPassword,
       role: 'admin',
-      address: 'Admin Headquarters',
+      phone:'9657024612'
     },
   });
 
