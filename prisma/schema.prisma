@@ -118,6 +118,7 @@ model Address {
   phone     String
   pincode   String
   city      String
+  houseArea String
   state     String
   landmark  String?
   createdAt DateTime @default(now())
