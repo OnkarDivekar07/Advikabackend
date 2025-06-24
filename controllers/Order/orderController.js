@@ -1,21 +1,40 @@
 const orderService = require('../../services/Order/orderService');
 
-exports.createOrder = async (req, res) => {
+exports.createDraftOrder = async (req, res) => {
   try {
-    console.log(req.user.userId)
-    const order = await orderService.createOrder(req.user.userId, req.body);
-    res.status(201).json(order);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+    const userId = req.user.userId;
+
+    const order = await orderService.createOrUpdateDraftOrderService({ userId });
+
+    res.status(201).json({ message: 'Draft order created/updated', order });
+  } catch (error) {
+    console.error('Draft Order Error:', error);
+    res.status(400).json({ message: error.message || 'Something went wrong' });
   }
 };
 
 exports.getUserOrders = async (req, res) => {
   try {
-    const userId = req.query.userId;
-    const orders = await orderService.getUserOrders(userId);
-    res.status(200).json(orders);
+    const userId = req.user.userId;
+    const orders = await orderService.getUserDraftOrder(userId);
+
+    if (orders) {
+      res.status(200).json({
+        success: true,
+        order: orders,
+      });
+    } else {
+      res.status(200).json({
+        success: false,
+        message: "No draft order found.",
+      });
+    }
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.log("Draft Order Error:", err.message);
+    res.status(400).json({
+      success: false,
+      error: err.message,
+    });
   }
 };
+

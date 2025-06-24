@@ -1,15 +1,41 @@
 const paymentService = require("../../services/Payment/paymentService");
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient(); // Assuming you're using Prisma
 
-exports.createOrder = async (req, res) => {
+exports.createOrderid = async (req, res) => {
   try {
-    const { amount } = req.body;
-    const order = await paymentService.createRazorpayOrder(amount);
+    const userId = req.user.id;
+
+    // 🟡 Step 1: Find the latest draft order of the user
+    const draftOrder = await prisma.order.findFirst({
+      where: {
+        userId,
+        status: "draft",
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (!draftOrder || draftOrder.total <= 0) {
+      return res.status(400).json({ success: false, message: "No valid draft order" });
+    }
+   
+    // 🟡 Step 2: Create Razorpay Order ID with amount
+    const razorpayOrder = await paymentService.createRazorpayOrder({
+      amount: draftOrder.total * 100, // Convert to paise
+      currency: "INR",
+      receipt: "order_" + draftOrder.id,
+    });
 
     res.status(200).json({
       success: true,
-      order,
+      order: razorpayOrder,
+      key_id: process.env.RAZORPAY_KEY_ID
     });
+
   } catch (error) {
+    console.log(error)
     res.status(500).json({ success: false, error: error.message });
   }
 };
@@ -29,10 +55,11 @@ exports.verifyPayment = async (req, res) => {
     );
 
     if (isValid) {
-      res.status(200).json({ success: true, message: "Payment verified" });
-    } else {
-      res.status(400).json({ success: false, message: "Invalid signature" });
+      // Optionally, update order status in DB
+      return res.status(200).json({ success: true, message: "Payment verified" });
     }
+
+    res.status(400).json({ success: false, message: "Invalid signature" });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
