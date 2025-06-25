@@ -56,7 +56,9 @@ model Order {
   user       User      @relation(fields: [userId], references: [id])
   total      Float
   status     String    // e.g. 'pending', 'shipped', 'delivered', 'cancelled'
-  payment    Json      // store payment details like method, transaction ID etc.
+  paymentStatus String @default("pending") // 'pending', 'paid', etc.
+  payment    Payment?
+  paymentId      String?    @unique
   orderItems  OrderItem[]
   createdAt  DateTime  @default(now())
 }
@@ -122,4 +124,18 @@ model Address {
   state     String
   landmark  String?
   createdAt DateTime @default(now())
+}
+
+
+model Payment {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId           String   @unique
+  order             Order    @relation(fields: [orderId], references: [id])
+  method            String   // e.g., razorpay, cod
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+  amount            Float
+  status            String   // paid, failed, refunded etc.
+  createdAt         DateTime @default(now())
 }

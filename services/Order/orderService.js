@@ -23,6 +23,7 @@ exports.createOrUpdateDraftOrderService = async ({ userId }) => {
       return sum + item.product.price * item.quantity;
     }, 0);
 
+
     // 3. Check for existing draft order
     let draftOrder = await tx.order.findFirst({
       where: {
@@ -33,15 +34,15 @@ exports.createOrUpdateDraftOrderService = async ({ userId }) => {
         createdAt: 'desc',
       },
     });
-
+   
     if (draftOrder) {
+      
       // 4. Delete previous order items to avoid duplication
       await tx.orderItem.deleteMany({
         where: {
           orderId: draftOrder.id,
         },
       });
-
       // 5. Re-create order items with latest cart
       await Promise.all(
         cartItems.map(item =>

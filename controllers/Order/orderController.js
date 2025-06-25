@@ -6,7 +6,7 @@ exports.createDraftOrder = async (req, res) => {
 
     const order = await orderService.createOrUpdateDraftOrderService({ userId });
 
-    res.status(201).json({ message: 'Draft order created/updated', order });
+    res.status(201).json({ message: 'Draft order created/updated', order,success: true });
   } catch (error) {
     console.error('Draft Order Error:', error);
     res.status(400).json({ message: error.message || 'Something went wrong' });
