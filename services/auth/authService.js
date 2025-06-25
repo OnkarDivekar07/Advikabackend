@@ -12,7 +12,7 @@ exports.sendOtpService = async (phone) => {
   otpStore[phone] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 
   await client.messages.create({
-    body: `Your OTP is: ${otp}`,
+    body: `Your Advika OTP is ${otp}. Do not share it with anyone.`,
     from: process.env.TWILIO_PHONE,
     to: phone,
   });
