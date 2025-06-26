@@ -2,10 +2,21 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 
-exports.createOrUpdateDraftOrderService = async ({ userId }) => {
+exports.createOrUpdateDraftOrderService = async ({ userId, selectedAddressId }) => {
+    
   if (!userId) {
     throw new Error('User ID is required');
   }
+ 
+  if (selectedAddressId) {
+  const address = await prisma.address.findUnique({
+    where: { id: selectedAddressId },
+  });
+
+  if (!address || address.userId !== userId) {
+    throw new Error("Invalid or unauthorized address.");
+  }
+}
 
   return await prisma.$transaction(async (tx) => {
     // 1. Fetch cart items with product info
@@ -62,6 +73,7 @@ exports.createOrUpdateDraftOrderService = async ({ userId }) => {
         where: { id: draftOrder.id },
         data: {
           total,
+          addressId: selectedAddressId
         },
       });
     } else {
@@ -71,7 +83,7 @@ exports.createOrUpdateDraftOrderService = async ({ userId }) => {
           userId,
           total,
           status: 'draft',
-          payment: {}, // Placeholder
+          addressId: selectedAddressId
         },
       });
 
@@ -122,7 +134,6 @@ exports.getUserDraftOrder = async (userId) => {
       total: true,
       status: true,
       createdAt: true,
-      payment: true,          // includes payment object
       orderItems: {
         select: {
           id: true,
@@ -141,4 +152,58 @@ exports.getUserDraftOrder = async (userId) => {
   });
 
   return draftOrder;
+};
+
+
+exports.getAllOrders = async () => {
+  const ordersRaw = await prisma.order.findMany({
+    include: {
+      user: true,
+      orderItems: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  // Format the data to match frontend expectations
+  const orders = ordersRaw.map((order) => ({
+  id: order.id,
+  user: {
+    id: order.userId,
+    name: order.user?.name || "N/A",
+  },
+  createdAt: order.createdAt, // needed as-is
+  total: order.total,
+  status: order.status,
+  paymentStatus: order.paymentStatus,
+}));
+
+  return orders;
+};
+
+
+exports.fetchOrderById = async (id) => {
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+      address: true,
+      orderItems: {
+        include: {
+          product: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return order;
 };

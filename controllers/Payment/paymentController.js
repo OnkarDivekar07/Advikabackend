@@ -26,6 +26,7 @@ exports.createOrderid = async (req, res) => {
       amount: draftOrder.total * 100, // Convert to paise
       currency: "INR",
       receipt: "order_" + draftOrder.id,
+      order_id:draftOrder.id
     });
 
     res.status(200).json({
@@ -56,7 +57,8 @@ exports.verifyPayment = async (req, res) => {
 
     if (isValid) {
       // Optionally, update order status in DB
-      return res.status(200).json({ success: true, message: "Payment verified" });
+     await paymentService.updateOrderAfterPayment(razorpay_order_id, razorpay_payment_id);
+    return res.status(200).json({ success: true, message: "Payment verified" });
     }
 
     res.status(400).json({ success: false, message: "Invalid signature" });
