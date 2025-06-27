@@ -38,3 +38,55 @@ exports.getAdminStats = async () => {
     totalRevenue
   };
 };
+
+
+exports.getAllUsersWithStats = async () => {
+  const users = await prisma.user.findMany({
+    where:{
+      role:'customer'
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      createdAt: true,
+      addresses: {
+        select: {
+          houseArea: true,
+          city: true,
+          state: true,
+          pincode: true,
+        }
+      },
+      orders: {
+        select: {
+          id: true,
+          total: true,
+          createdAt: true
+        }
+      }
+    }
+  });
+
+  return users.map((user) => {
+    const totalOrders = user.orders.length;
+    const totalSpent = user.orders.reduce((sum, order) => sum + order.total, 0);
+    const lastOrderDate = user.orders.reduce((latest, order) =>
+      new Date(order.createdAt) > new Date(latest) ? order.createdAt : latest,
+      null
+    );
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      joinedOn: user.createdAt,
+      addresses: user.addresses,
+      totalOrders,
+      totalSpent,
+      lastOrderDate
+    };
+  });
+};

@@ -8,3 +8,13 @@ exports.getStats = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await adminService.getAllUsersWithStats();
+    res.status(200).json(users);
+  } catch (err) {
+    console.log(err.message)
+    res.status(500).json({ error: err.message });
+  }
+};
