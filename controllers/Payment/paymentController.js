@@ -66,3 +66,26 @@ exports.verifyPayment = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+
+exports.placeCODOrder = async (req, res) => {
+  
+  const userId = req.user.userId;
+
+  const { orderId, method } = req.body;
+  
+  
+
+
+
+  if (method !== "cod") {
+    return res.status(400).json({ success: false, message: "Invalid method" });
+  }
+
+  try {
+    const result = await paymentService.handleCODOrder(orderId,userId);
+    return res.json(result);
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};

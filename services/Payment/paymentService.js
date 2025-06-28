@@ -57,3 +57,37 @@ exports.updateOrderAfterPayment = async (order_id, payment_id) => {
     },
   });
 };
+
+
+
+exports.handleCODOrder = async (orderId, userId) => {
+  try {
+    // 1. Fetch the order to verify ownership
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+    });
+ 
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    if (order.userId !== userId) {
+      throw new Error("Unauthorized: Order does not belong to this user");
+    }
+
+    // 2. Update the order with COD details
+    const updatedOrder = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        paymentStatus: "cod_pending",
+        status: "confirmed",
+        payment_order_id:`cod-${orderId}`
+      },
+    });
+
+    return { success: true, order: updatedOrder };
+  } catch (err) {
+    console.error("COD Order Error:", err);
+    throw new Error(err.message || "Failed to place COD order");
+  }
+};

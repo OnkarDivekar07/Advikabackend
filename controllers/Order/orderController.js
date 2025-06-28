@@ -4,7 +4,7 @@ exports.createDraftOrder = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { selectedAddressId } = req.body;
-         console.log("adressid",selectedAddressId)
+    
     const order = await orderService.createOrUpdateDraftOrderService({ userId,selectedAddressId });
 
     res.status(201).json({ message: 'Draft order created/updated', order,success: true });

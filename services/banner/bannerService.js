@@ -18,7 +18,6 @@ const getLatestBanner =  async (req, res) => {
 
 // Create new banner
 const createNewBanner = async (imageUrl, linkUrl) => {
-  console.log('i  am here')
   return await prisma.banner.create({
     data: { imageUrl, linkUrl },
   });
