@@ -1,6 +1,7 @@
 const orderService = require('../../services/Order/orderService');
+const CustomError=require('../../utils/customError')
 
-exports.createDraftOrder = async (req, res) => {
+exports.createDraftOrder = async (req, res,next) => {
   try {
     const userId = req.user.userId;
     const { selectedAddressId } = req.body;
@@ -9,12 +10,11 @@ exports.createDraftOrder = async (req, res) => {
 
     res.status(201).json({ message: 'Draft order created/updated', order,success: true });
   } catch (error) {
-    console.error('Draft Order Error:', error);
-    res.status(400).json({ message: error.message || 'Something went wrong' });
+    next(error)
   }
 };
 
-exports.getUserOrders = async (req, res) => {
+exports.getUserOrders = async (req, res,next) => {
   try {
     const userId = req.user.userId;
     
@@ -26,44 +26,35 @@ exports.getUserOrders = async (req, res) => {
         order: orders,
       });
     } else {
-      res.status(200).json({
-        success: false,
-        message: "No draft order found.",
-      });
+      throw new CustomError('No draft order found.',404);
     }
   } catch (err) {
-    console.log("Draft Order Error:", err.message);
-    res.status(400).json({
-      success: false,
-      error: err.message,
-    });
+   next(err)
   }
 };
 
-exports.getOrders = async (req, res) => {
+exports.getOrders = async (req, res,next) => {
   try {
     const orders = await orderService.getAllOrders();
     res.status(200).json(orders);
   } catch (error) {
-    console.error("Error fetching orders:", error);
-    res.status(500).json({ message: "Failed to fetch orders" });
+     next(error)
   }
 };
 
 
-exports.getOrderById = async (req, res) => {
+exports.getOrderById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
     const order = await orderService.fetchOrderById(id);
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found" });
+       throw new CustomError('No draft order found.',404);
     }
 
     res.status(200).json(order);
   } catch (error) {
-    console.error("Error fetching order:", error);
-    res.status(500).json({ message: "Server error" });
+    next(error)
   }
 };

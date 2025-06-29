@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const CustomError=require('../../utils/customError')
 
 
 // Fetch latest banner
@@ -11,8 +12,7 @@ const getLatestBanner =  async (req, res) => {
     });
     return  banners
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error fetching banners' });
+   throw new CustomError('No banners found', 404); 
   }
 };
 

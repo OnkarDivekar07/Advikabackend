@@ -2,27 +2,26 @@
 
 const bannerService = require('../../services/banner/bannerService');
 const awsService = require('../../utils/AWSUploads');
-
+const CustomError=require('../../utils/customError')
 // GET /api/banner
-const getBanner = async (req, res) => {
+const getBanner = async (req, res, next) => {
   try {
     const banner = await bannerService.getLatestBanner();
     res.json(banner);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+  } catch (err) {
+    next(err)
   }
 };
 
 // POST /api/banner  (image upload + DB save)
-const createBanner = async (req, res) => {
+const createBanner = async (req, res,next) => {
   try {
     const image = req.file;
     const { linkUrl } = req.body;
 
     if (!image) {
-      return res.status(400).json({ error: 'No image file uploaded' });
-    }
+    throw new CustomError('No image file uploaded', 400);}
+
 
     const filename = `banner-images/${Date.now()}_${image.originalname}`;
     const imageUrl = await awsService.uploadToS3(image.buffer, filename);
@@ -31,23 +30,22 @@ const createBanner = async (req, res) => {
 
     res.status(201).json({ message: 'Banner created successfully', banner });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
+     next(err)
   }
 };
 
 
 
 
-const deleteBanner = async (req, res) => {
+const deleteBanner = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     // Get banner from DB
     const banner = await bannerService.getBannerById(id);
     if (!banner) {
-      return res.status(404).json({ message: 'Banner not found' });
-    }
+  throw new CustomError('Banner not found', 404);
+}
 
     // Extract filename from S3 URL
     const key = banner.imageUrl.split('.com/')[1];
@@ -59,23 +57,21 @@ const deleteBanner = async (req, res) => {
     await bannerService.deleteBannerById(id);
 
     res.status(200).json({ message: 'Banner deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting banner:', error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    next(err)
   }
 };
 
-const fetchNewArrivals = async (req, res) => {
+const fetchNewArrivals = async (req, res, next) => {
   try {
     const products = await bannerService.getNewArrivals()
     res.status(200).json({ success: true, data: products });
-  } catch (error) {
-    console.error("Error fetching new arrivals:", error);
-    res.status(500).json({ success: false, message: "Failed to fetch new arrivals" });
+  } catch (err) {
+    next(err)
   }
 };
 
-const softDeleteNewArrival = async (req, res) => {
+const softDeleteNewArrival = async (req, res,next) => {
   try {
     const { id } = req.params;
     const updatedProduct = await bannerService.softDeleteNewArrivalService(id);
@@ -84,9 +80,8 @@ const softDeleteNewArrival = async (req, res) => {
       message: 'Product removed from new arrivals.',
       data: updatedProduct,
     });
-  } catch (error) {
-    console.error('Error in softDeleteNewArrival:', error);
-    res.status(500).json({ message: 'Failed to update product', error });
+  } catch (err) {
+     next(err)
   }
 };
 

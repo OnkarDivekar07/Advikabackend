@@ -1,26 +1,26 @@
 const productService = require('../../services/Product/productServices');
 const awsService = require('../../utils/AWSUploads');
+const CustomError = require('../../utils/customError');
 
-exports.getAllProducts = async (req, res) => {
+exports.getAllProducts = async (req, res,next) => {
   try {
     const products = await productService.getAllProducts();
     res.json({ success: true, data: products });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    next(error)
   }
 };
 
-exports.getProductById = async (req, res) => {
+exports.getProductById = async (req, res, next) => {
   try {
-    console.log(req.params.id)
     const product = await productService.getProductById(req.params.id);
     res.json({ success: true, data: product });
   } catch (error) {
-    res.status(404).json({ success: false, message: error.message });
+    next(error)
   }
 };
 
-exports.createProduct = async (req, res) => {
+exports.createProduct = async (req, res, next) => {
   try {
     const images = req.files;
      
@@ -42,11 +42,11 @@ exports.createProduct = async (req, res) => {
 
     // Basic field validation
     if (!name || !price || !stock || !description || category.length === 0 || !brand) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+      throw new CustomError('Missing required fields',404);
     }
 
     if (!images || images.length === 0) {
-      return res.status(400).json({ error: 'No images uploaded' });
+      throw new CustomError('No images uploaded');
     }
 
     const uploadedImageUrls = await Promise.all(
@@ -69,7 +69,6 @@ exports.createProduct = async (req, res) => {
       images: uploadedImageUrls,
     };
 
-    console.log('🛠 Creating product with data:', productData);
 
     const product = await productService.createProduct(productData);
 
@@ -79,16 +78,14 @@ exports.createProduct = async (req, res) => {
       data: product,
     });
   } catch (error) {
-    console.error('❌ Product creation error:', error);
-    res.status(500).json({ success: false, message: error.message || 'Server Error' });
+    next(error)
   }
 };
 
 
-exports.updateProduct = async (req, res) => {
+exports.updateProduct = async (req, res, next) => {
   try {
     const id = req.params.id;
-    console.log(req.body);
 
     // Extract fields from form data
     const { name, category, price, description, stock, brand, isNewArrival } = req.body;
@@ -119,35 +116,32 @@ exports.updateProduct = async (req, res) => {
 
     res.json({ success: true, product: updatedProduct });
   } catch (error) {
-    console.error('Update failed:', error.message);
-    res.status(400).json({ success: false, message: error.message });
+    next(error)
   }
 };
 
 
-exports.deleteProduct = async (req, res) => {
+exports.deleteProduct = async (req, res,   next) => {
   try {
     const product = await productService.getProductById(req.params.id);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      throw new CustomError('Product not found',404);
     }
 
     await productService.deleteProduct(req.params.id);
     res.json({ success: true, message: 'Product deleted successfully' });
   } catch (error) {
-    console.error("Delete error:", error);
-    res.status(400).json({ success: false, message: error.message });
+    next(error)
   }
 };
 
-exports.getRelatedProducts = async (req, res) => {
+exports.getRelatedProducts = async (req, res,next) => {
   const { id } = req.params;
 
   try {
     const related = await productService.getRelatedProducts(id);
     res.json(related);
   } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).json({ message: error.message || 'Server error' });
+   next(error)
   }
 };

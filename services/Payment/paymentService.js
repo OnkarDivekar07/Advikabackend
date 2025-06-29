@@ -2,7 +2,7 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-
+const customError=  require('../../utils/customError')
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -31,8 +31,8 @@ exports.createRazorpayOrder = async ({ amount, currency = "INR", receipt, order_
 
     return razorpayOrder;
   } catch (err) {
-    console.error("Failed to create and attach Razorpay order:", err);
-    throw new Error("Unable to create payment order.");
+    
+    throw new customError("Unable to create payment order.",500);
   }
 };
 

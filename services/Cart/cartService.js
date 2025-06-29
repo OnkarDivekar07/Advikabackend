@@ -19,7 +19,7 @@ const saveUserCart = async (userId, cartItems) => {
   }));
 
  const res= await prisma.cart.createMany({ data: newCartData });
- console.log('saved cartdata', res)
+ 
 };
 
 const updateCartItem = async (userId, productId, quantity) => {

@@ -3,11 +3,12 @@ const prisma = new PrismaClient();
 const twilio = require('twilio');
 const otpStore = require('../../utils/otpStore');
 const generateToken  = require('../../utils/generateToken');
+const CustomError=require('../../utils/customError')
 
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 
 exports.sendOtpService = async (phone) => {
-  console.log("Sending OTP to phone:", phone); // or mobile if that's the var
+  
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   otpStore[phone] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 
@@ -20,9 +21,17 @@ exports.sendOtpService = async (phone) => {
 
 exports.verifyOtpService = async (phone, otp) => {
   const record = otpStore[phone];
-  if (!record) throw new Error('OTP not found');
-  if (Date.now() > record.expiresAt) throw new Error('OTP expired');
-  if (record.otp !== otp) throw new Error('Invalid OTP');
+  if (!record) {
+  throw new CustomError('OTP not found', 404);
+}
+
+if (Date.now() > record.expiresAt) {
+  throw new CustomError('OTP has expired', 410); // 410 Gone is semantically correct for expired resources
+}
+
+if (record.otp !== otp) {
+  throw new CustomError('Invalid OTP', 400);
+}
 
   delete otpStore[phone];
 

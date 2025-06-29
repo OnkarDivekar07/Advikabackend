@@ -1,20 +1,19 @@
 const adminService = require('../../services/Admin/adminService');
 
-exports.getStats = async (req, res) => {
+exports.getStats = async (req, res,next) => {
   try {
     const stats = await adminService.getAdminStats();
     res.status(200).json(stats);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+     next(err);
   }
 };
 
-exports.getAllUsers = async (req, res) => {
+exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await adminService.getAllUsersWithStats();
     res.status(200).json(users);
   } catch (err) {
-    console.log(err.message)
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 };

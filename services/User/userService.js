@@ -1,6 +1,7 @@
 const { hashPassword, comparePassword } = require('../../utils/hashPassword');
 const generateToken = require('../../utils/generateToken');
 const { PrismaClient } = require('@prisma/client');
+const CustomError = require('../../utils/customError');
 const prisma = new PrismaClient();
 
 
@@ -8,7 +9,7 @@ const registerUser = async ({ name, email, password, role }) => {
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      throw new Error('Email already registered.');
+      throw new CustomError('Email already registered.',404);
     }
 
     const hashedPassword = await hashPassword(password);
@@ -31,8 +32,8 @@ const registerUser = async ({ name, email, password, role }) => {
       }
     };
   } catch (error) {
-    console.error(error);
-    throw new Error('Something went wrong during registration');
+    
+    throw new CustomError('Something went wrong during registration',500);
   }
 };
 
@@ -41,12 +42,12 @@ const loginUser = async ({ email, password }) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      throw new Error('Invalid email or password');
+      throw new CustomError('Invalid email or password',401);
     }
 
     const validPassword = await comparePassword(password, user.password); // Use comparePassword from utils
     if (!validPassword) {
-      throw new Error('Invalid email or password');
+      throw new CustomError('Invalid email or password',401);
     }
 
     // Generate JWT token with an expiration time of 1 hour (optional)
@@ -55,8 +56,8 @@ const loginUser = async ({ email, password }) => {
     return { message: 'Login successful', token, user: { id: user.id, email: user.email } };
   } catch (error) {
     // Log error and throw custom error message
-    console.error(error);
-    throw new Error('Something went wrong during login');
+   
+    throw new CustomError('Something went wrong during login',500);
   }
 };
 
@@ -75,7 +76,7 @@ const getUserProfile = async (userId) => {
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new CustomError('User not found',404);
   }
 
   return user;

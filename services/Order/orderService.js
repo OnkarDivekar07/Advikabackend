@@ -1,11 +1,11 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-
+const customError=  require('../../utils/customError')
 
 exports.createOrUpdateDraftOrderService = async ({ userId, selectedAddressId }) => {
     
   if (!userId) {
-    throw new Error('User ID is required');
+    throw new customError('User ID is required',404);
   }
  
   if (selectedAddressId) {
@@ -14,7 +14,7 @@ exports.createOrUpdateDraftOrderService = async ({ userId, selectedAddressId }) 
   });
 
   if (!address || address.userId !== userId) {
-    throw new Error("Invalid or unauthorized address.");
+throw new customError("Invalid or unauthorized address.",404);
   }
 }
 
@@ -26,7 +26,7 @@ exports.createOrUpdateDraftOrderService = async ({ userId, selectedAddressId }) 
     });
 
     if (!cartItems || cartItems.length === 0) {
-      throw new Error('No items found in cart');
+      throw new customError('No items found in cart',404);
     }
 
     // 2. Calculate total

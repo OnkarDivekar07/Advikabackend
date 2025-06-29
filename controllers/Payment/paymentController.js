@@ -1,8 +1,9 @@
 const paymentService = require("../../services/Payment/paymentService");
 const { PrismaClient } = require('@prisma/client');
+const CustomError = require("../../utils/customError");
 const prisma = new PrismaClient(); // Assuming you're using Prisma
 
-exports.createOrderid = async (req, res) => {
+exports.createOrderid = async (req, res,next) => {
   try {
     const userId = req.user.id;
 
@@ -18,7 +19,7 @@ exports.createOrderid = async (req, res) => {
     });
 
     if (!draftOrder || draftOrder.total <= 0) {
-      return res.status(400).json({ success: false, message: "No valid draft order" });
+      throw new CustomError("No valid draft order",401);
     }
    
     // 🟡 Step 2: Create Razorpay Order ID with amount
@@ -36,12 +37,11 @@ exports.createOrderid = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ success: false, error: error.message });
+    next(error)
   }
 };
 
-exports.verifyPayment = async (req, res) => {
+exports.verifyPayment = async (req, res,next) => {
   try {
     const {
       razorpay_order_id,
@@ -61,31 +61,27 @@ exports.verifyPayment = async (req, res) => {
     return res.status(200).json({ success: true, message: "Payment verified" });
     }
 
-    res.status(400).json({ success: false, message: "Invalid signature" });
+  throw new CustomError("Invalid signature",400);
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    next(error)
   }
 };
 
 
-exports.placeCODOrder = async (req, res) => {
+exports.placeCODOrder = async (req, res,next) => {
   
   const userId = req.user.userId;
 
   const { orderId, method } = req.body;
   
-  
-
-
-
   if (method !== "cod") {
-    return res.status(400).json({ success: false, message: "Invalid method" });
+    throw new CustomError("Invalid method",401);
   }
 
   try {
     const result = await paymentService.handleCODOrder(orderId,userId);
     return res.json(result);
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+      next(err)
   }
 };

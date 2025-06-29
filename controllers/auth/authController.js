@@ -1,22 +1,21 @@
 const { sendOtpService, verifyOtpService } = require('../../services/auth/authService');
 
-exports.sendOtp = async (req, res) => {
+exports.sendOtp = async (req, res, next) => {
   try {
     const { phone } = req.body;
     await sendOtpService(phone);
     res.json({ message: 'OTP sent successfully' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to send OTP' });
+     next(err);
   }
 };
 
-exports.verifyOtp = async (req, res) => {
+exports.verifyOtp = async (req, res, next) => {
   const { phone, otp } = req.body;
   try {
     const { token, user,success  } = await verifyOtpService(phone, otp);
     res.json({ message: 'OTP verified', token, user: { id: user.id, phone: user.phone },success });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+        next(err);
   }
 };

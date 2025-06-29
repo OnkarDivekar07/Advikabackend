@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const CustomError = require('../../utils/customError');
 const prisma = new PrismaClient();
 
 const getAllProducts = async () => {
@@ -10,7 +11,7 @@ const getAllProducts = async () => {
 
 const getProductById = async (id) => {
   const product = await prisma.product.findUnique({ where: { id } });
-  if (!product) throw new Error('Product not found');
+  if (!product) throw new CustomError('Product not found',404);
   return product;
 };
 
@@ -19,7 +20,7 @@ const createProduct = async (data) => {
 };
 
 const updateProduct = async (id, data) => {
-  console.log('UPDATE DATA RECEIVED:', data); // debug here
+
   return await prisma.product.update({
     where: { id },
     data, // <== must not be undefined
@@ -40,7 +41,7 @@ const getRelatedProducts = async (productId) => {
   });
 
   if (!product) {
-    throw new Error('Product not found');
+    throw new CustomError('Product not found',404);
   }
 
   const relatedProducts = await prisma.product.findMany({
